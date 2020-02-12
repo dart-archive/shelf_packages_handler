@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:isolate';
 
-import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_static/shelf_static.dart';
@@ -14,27 +14,37 @@ import 'package:shelf_static/shelf_static.dart';
 class PackageConfigHandler {
   /// The static handlers for serving entries in the package config, indexed by
   /// name.
-  final _packageHandlers = <String, Handler>{};
+  final _packageHandlers = <String, Future<Handler>>{};
 
-  /// The information specifying how to do package resolution.
-  final PackageConfig _packageConfig;
+  /// A map of package names to the uri to use for resolving those packages.
+  final Map<String, Uri> _packageMap;
 
-  PackageConfigHandler(this._packageConfig);
+  PackageConfigHandler({Map<String, Uri> packageMap})
+      : _packageMap = packageMap;
 
   /// The callback for handling a single request.
-  FutureOr<Response> handleRequest(Request request) {
+  Future<Response> handleRequest(Request request) async {
     var segments = request.url.pathSegments;
-    return _handlerFor(segments.first)(request.change(path: segments.first));
+    var handler = await _handlerFor(segments.first);
+    return handler(request.change(path: segments.first));
   }
 
   /// Creates a handler for [packageName] based on the package map in
-  /// [_packageConfig].
-  Handler _handlerFor(String packageName) {
-    return _packageHandlers.putIfAbsent(packageName, () {
-      var package = _packageConfig[packageName];
-      var handler = package == null
+  /// [_packageMap] or the current isolate resolver.
+  Future<Handler> _handlerFor(String packageName) {
+    return _packageHandlers.putIfAbsent(packageName, () async {
+      Uri packageUri;
+      if (_packageMap != null) {
+        packageUri = _packageMap[packageName];
+      } else {
+        var fakeResolvedUri = await Isolate.resolvePackageUri(
+            Uri(scheme: 'package', path: '$packageName/'));
+        packageUri = fakeResolvedUri;
+      }
+
+      var handler = packageUri == null
           ? (_) => Response.notFound('Package $packageName not found.')
-          : createStaticHandler(p.fromUri(package.packageUriRoot),
+          : createStaticHandler(p.fromUri(packageUri),
               serveFilesOutsidePath: true);
 
       return handler;

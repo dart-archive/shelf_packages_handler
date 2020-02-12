@@ -4,29 +4,22 @@
 
 library shelf_packages_handler;
 
-import 'dart:isolate';
-
 import 'package:shelf/shelf.dart';
-import 'package:package_config/package_config.dart';
 
-import 'src/async_handler.dart';
 import 'src/dir_handler.dart';
 import 'src/package_config_handler.dart';
 
 /// A handler that serves the contents of a virtual packages directory.
 ///
 /// This effectively serves `package:${request.url}`. It locates packages using
-/// the package resolution logic defined by [packageConfig]. If [packageConfig]
-/// isn't passed, it defaults to the current isolate's package config.
+/// the mapping defined by [packageMap]. If [packageMap] isn't passed, it
+/// defaults to the current isolate's package resolution logic.
+///
+/// The [packageMap] maps package names to uris to their `lib` directory.
 ///
 /// This can only serve assets from `file:` URIs.
-Handler packagesHandler({PackageConfig packageConfig}) {
-  return AsyncHandler(() async {
-    var isolateConfigUri = await Isolate.packageConfig;
-    packageConfig ??= await loadPackageConfigUri(isolateConfigUri);
-    return PackageConfigHandler(packageConfig).handleRequest;
-  }());
-}
+Handler packagesHandler({Map<String, Uri> packageMap}) =>
+    PackageConfigHandler(packageMap: packageMap).handleRequest;
 
 /// A handler that serves virtual `packages/` directories wherever they're
 /// requested.
@@ -36,5 +29,5 @@ Handler packagesHandler({PackageConfig packageConfig}) {
 ///
 /// This is useful for ensuring that `package:` imports work for all entrypoints
 /// in Dartium.
-Handler packagesDirHandler({PackageConfig packageConfig}) =>
-    DirHandler('packages', packagesHandler(packageConfig: packageConfig));
+Handler packagesDirHandler({Map<String, Uri> packageMap}) =>
+    DirHandler('packages', packagesHandler(packageMap: packageMap));

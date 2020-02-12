@@ -2,9 +2,10 @@
 
 ### Breaking changes
 
-* Dropped dependency on `package_resolver` for `package_config` instead.
-  * All `PackageResolver` apis now take a `PackageConfig`.
-* Requires the latest sdk which will generate `package_config.json` files.
+* Dropped the dependency on `package_resolver`.
+  * All `PackageResolver` apis now take a `Map<String, Uri>` of package name
+    to package uri root.
+  * Named arguments have been renamed from `resolver` to `packageMap`.
 
 ## 1.0.4
 
