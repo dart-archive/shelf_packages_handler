@@ -1,5 +1,5 @@
 name: shelf_packages_handler
-version: 2.0.0-dev
+version: 2.0.0
 
 description: A shelf handler for serving a `packages/` directory.
 author: Dart Team <misc@dartlang.org>
