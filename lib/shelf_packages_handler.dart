@@ -15,7 +15,8 @@ import 'src/package_config_handler.dart';
 /// the mapping defined by [packageMap]. If [packageMap] isn't passed, it
 /// defaults to the current isolate's package resolution logic.
 ///
-/// The [packageMap] maps package names to uris to their `lib` directory.
+/// The [packageMap] maps package names to the base uri for resolving
+/// `package:` uris for that package.
 ///
 /// This can only serve assets from `file:` URIs.
 Handler packagesHandler({Map<String, Uri> packageMap}) =>

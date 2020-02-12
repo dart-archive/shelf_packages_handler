@@ -4,7 +4,7 @@
 
 * Dropped the dependency on `package_resolver`.
   * All `PackageResolver` apis now take a `Map<String, Uri>` of package name
-    to package uri root.
+    to the base uri for resolving `package:` uris for that package.
   * Named arguments have been renamed from `resolver` to `packageMap`.
 
 ## 1.0.4

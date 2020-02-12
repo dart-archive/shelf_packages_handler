@@ -16,7 +16,8 @@ class PackageConfigHandler {
   /// name.
   final _packageHandlers = <String, Future<Handler>>{};
 
-  /// A map of package names to the uri to use for resolving those packages.
+  /// Optional, a map of package names to base uri for resolving `package:`
+  /// uris for that package.
   final Map<String, Uri> _packageMap;
 
   PackageConfigHandler({Map<String, Uri> packageMap})
