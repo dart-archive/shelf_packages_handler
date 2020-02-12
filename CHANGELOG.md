@@ -1,3 +1,11 @@
+## 2.0.0-dev
+
+### Breaking changes
+
+* Dropped dependency on `package_resolver` for `package_config` instead.
+  * All `PackageResolver` apis now take a `PackageConfig`.
+* Requires the latest sdk which will generate `package_config.json` files.
+
 ## 1.0.4
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.

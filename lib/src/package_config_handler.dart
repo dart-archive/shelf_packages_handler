@@ -4,12 +4,10 @@
 
 import 'dart:async';
 
-import 'package:package_resolver/package_resolver.dart';
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_static/shelf_static.dart';
-
-import 'async_handler.dart';
 
 /// A shelf handler that serves a virtual packages directory based on a package
 /// config.
@@ -19,26 +17,27 @@ class PackageConfigHandler {
   final _packageHandlers = <String, Handler>{};
 
   /// The information specifying how to do package resolution.
-  final PackageResolver _resolver;
+  final PackageConfig _packageConfig;
 
-  PackageConfigHandler(this._resolver);
+  PackageConfigHandler(this._packageConfig);
 
   /// The callback for handling a single request.
-  FutureOr<Response> call(Request request) {
+  FutureOr<Response> handleRequest(Request request) {
     var segments = request.url.pathSegments;
     return _handlerFor(segments.first)(request.change(path: segments.first));
   }
 
-  /// Creates a handler for [package] based on the package map in [_resolver].
-  Handler _handlerFor(String package) {
-    return _packageHandlers.putIfAbsent(package, () {
-      return AsyncHandler(_resolver.urlFor(package).then((url) {
-        var handler = url == null
-            ? (_) => Response.notFound('Package $package not found.')
-            : createStaticHandler(p.fromUri(url), serveFilesOutsidePath: true);
+  /// Creates a handler for [packageName] based on the package map in
+  /// [_packageConfig].
+  Handler _handlerFor(String packageName) {
+    return _packageHandlers.putIfAbsent(packageName, () {
+      var package = _packageConfig[packageName];
+      var handler = package == null
+          ? (_) => Response.notFound('Package $packageName not found.')
+          : createStaticHandler(p.fromUri(package.packageUriRoot),
+              serveFilesOutsidePath: true);
 
-        return handler;
-      }));
+      return handler;
     });
   }
 }
